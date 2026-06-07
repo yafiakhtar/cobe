@@ -28,6 +28,13 @@ export const showcaseDefaultMarkers: ShowcaseMarker[] = [
     size: 0.035,
     label: 'United States',
   },
+  {
+    id: 'default-india',
+    location: [20.5937, 78.9629],
+    globeColor: [1, 0.35, 0.08],
+    size: 0.035,
+    label: 'India',
+  },
 ]
 
 export const showcaseDefaultArcs: {

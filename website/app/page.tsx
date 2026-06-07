@@ -486,6 +486,7 @@ function Showcases() {
       arcs: getArcs(),
       arcColor: [0.3, 0.45, 0.85],
       highlightUSA: showcaseRef.current === 'default',
+      highlightIndia: showcaseRef.current === 'default',
       highlightColor: [1, 0.35, 0.08],
       arcWidth: 0.5,
       arcHeight: 0.25,
@@ -529,6 +530,7 @@ function Showcases() {
         markers: getMarkers(),
         arcs: getArcs(),
         highlightUSA: showcaseRef.current === 'default',
+        highlightIndia: showcaseRef.current === 'default',
       })
       animationId = requestAnimationFrame(animate)
     }

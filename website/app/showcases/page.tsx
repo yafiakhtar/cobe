@@ -83,6 +83,7 @@ function ShowcaseGlobe({
       arcs: getShowcaseArcs(showcaseKey),
       arcColor: config.arcColor,
       highlightUSA: showcaseKey === 'default',
+      highlightIndia: showcaseKey === 'default',
       highlightColor: [1, 0.35, 0.08],
       arcWidth: 0.5,
       arcHeight: 0.25,
@@ -96,6 +97,7 @@ function ShowcaseGlobe({
         phi,
         markers: getShowcaseMarkers(showcaseKey, config.markerSize),
         highlightUSA: showcaseKey === 'default',
+        highlightIndia: showcaseKey === 'default',
       })
       animationId = requestAnimationFrame(animate)
     }

@@ -11,6 +11,7 @@ uniform vec3 highlightColor;
 uniform vec4 renderParams;    // (dotsBrightness, diffuse, dark, opacity)
 uniform float mapBaseBrightness;
 uniform float highlightUSA;
+uniform float highlightIndia;
 uniform sampler2D uTexture;
 
 const float sqrt5 = 2.236068;
@@ -101,6 +102,64 @@ float usaRegion(vec2 lonLat) {
   return max(max(polygonLower48(lonLat), polygonAlaska(lonLat)), polygonHawaii(lonLat));
 }
 
+float polygonIndiaMainland(vec2 p) {
+  bool inside = false;
+  inside = toggleInside(inside, p, vec2(68.1, 23.8), vec2(69.0, 22.2));
+  inside = toggleInside(inside, p, vec2(69.0, 22.2), vec2(70.5, 21.0));
+  inside = toggleInside(inside, p, vec2(70.5, 21.0), vec2(72.0, 20.0));
+  inside = toggleInside(inside, p, vec2(72.0, 20.0), vec2(72.8, 18.0));
+  inside = toggleInside(inside, p, vec2(72.8, 18.0), vec2(72.9, 15.2));
+  inside = toggleInside(inside, p, vec2(72.9, 15.2), vec2(74.0, 12.0));
+  inside = toggleInside(inside, p, vec2(74.0, 12.0), vec2(76.2, 8.3));
+  inside = toggleInside(inside, p, vec2(76.2, 8.3), vec2(78.5, 8.1));
+  inside = toggleInside(inside, p, vec2(78.5, 8.1), vec2(80.3, 13.0));
+  inside = toggleInside(inside, p, vec2(80.3, 13.0), vec2(81.8, 16.5));
+  inside = toggleInside(inside, p, vec2(81.8, 16.5), vec2(84.0, 19.5));
+  inside = toggleInside(inside, p, vec2(84.0, 19.5), vec2(86.5, 21.0));
+  inside = toggleInside(inside, p, vec2(86.5, 21.0), vec2(88.1, 21.6));
+  inside = toggleInside(inside, p, vec2(88.1, 21.6), vec2(88.3, 24.0));
+  inside = toggleInside(inside, p, vec2(88.3, 24.0), vec2(87.2, 25.2));
+  inside = toggleInside(inside, p, vec2(87.2, 25.2), vec2(84.5, 26.8));
+  inside = toggleInside(inside, p, vec2(84.5, 26.8), vec2(82.0, 27.7));
+  inside = toggleInside(inside, p, vec2(82.0, 27.7), vec2(80.0, 30.2));
+  inside = toggleInside(inside, p, vec2(80.0, 30.2), vec2(78.0, 32.4));
+  inside = toggleInside(inside, p, vec2(78.0, 32.4), vec2(75.5, 34.7));
+  inside = toggleInside(inside, p, vec2(75.5, 34.7), vec2(73.5, 34.2));
+  inside = toggleInside(inside, p, vec2(73.5, 34.2), vec2(72.0, 32.0));
+  inside = toggleInside(inside, p, vec2(72.0, 32.0), vec2(70.5, 29.0));
+  inside = toggleInside(inside, p, vec2(70.5, 29.0), vec2(69.0, 26.0));
+  inside = toggleInside(inside, p, vec2(69.0, 26.0), vec2(68.1, 23.8));
+  return inside ? 1.0 : 0.0;
+}
+
+float polygonIndiaNortheast(vec2 p) {
+  bool inside = false;
+  inside = toggleInside(inside, p, vec2(88.0, 26.0), vec2(90.0, 25.2));
+  inside = toggleInside(inside, p, vec2(90.0, 25.2), vec2(91.0, 24.0));
+  inside = toggleInside(inside, p, vec2(91.0, 24.0), vec2(92.2, 23.3));
+  inside = toggleInside(inside, p, vec2(92.2, 23.3), vec2(94.5, 24.0));
+  inside = toggleInside(inside, p, vec2(94.5, 24.0), vec2(96.5, 26.0));
+  inside = toggleInside(inside, p, vec2(96.5, 26.0), vec2(97.5, 28.2));
+  inside = toggleInside(inside, p, vec2(97.5, 28.2), vec2(95.0, 29.3));
+  inside = toggleInside(inside, p, vec2(95.0, 29.3), vec2(92.0, 26.8));
+  inside = toggleInside(inside, p, vec2(92.0, 26.8), vec2(89.8, 26.0));
+  inside = toggleInside(inside, p, vec2(89.8, 26.0), vec2(88.0, 26.0));
+  return inside ? 1.0 : 0.0;
+}
+
+float polygonIndiaIslands(vec2 p) {
+  bool lakshadweep = p.x > 71.5 && p.x < 74.5 && p.y > 8.0 && p.y < 12.5;
+  bool andamanNicobar = p.x > 92.0 && p.x < 94.5 && p.y > 6.5 && p.y < 14.5;
+  return (lakshadweep || andamanNicobar) ? 1.0 : 0.0;
+}
+
+float indiaRegion(vec2 lonLat) {
+  return max(
+    max(polygonIndiaMainland(lonLat), polygonIndiaNortheast(lonLat)),
+    polygonIndiaIslands(lonLat)
+  );
+}
+
 vec3 nearestFibonacciLattice(vec3 p, out float m) {
   p = p.xzy;
 
@@ -184,7 +243,10 @@ void fragment() {
     float mapSample = texture2D(uTexture, vec2(mapU, -(gPhi / PI + 0.5))).x;
     float mapColor = max(mapSample, mapBaseBrightness);
     vec2 lonLat = vec2(mapU * 360.0 - 180.0, gPhi * 180.0 / PI);
-    float countryHighlight = highlightUSA * usaRegion(lonLat) * step(0.01, mapSample);
+    float countryHighlight = max(
+      highlightUSA * usaRegion(lonLat),
+      highlightIndia * indiaRegion(lonLat)
+    ) * step(0.01, mapSample);
 
     float sample = mapColor
       * smoothstep(0.008, 0.0, dis) // v

@@ -74,6 +74,7 @@ export default (canvas, opts) => {
   let glowColor = opts.glowColor || [1, 1, 1]
   let highlightColor = opts.highlightColor || [1, 0.35, 0.08]
   let highlightUSA = opts.highlightUSA ? 1 : 0
+  let highlightIndia = opts.highlightIndia ? 1 : 0
   let arcColor = opts.arcColor || [0.3, 0.6, 1]
   let arcWidth = opts.arcWidth ?? 1
   let arcHeight = opts.arcHeight ?? 0.2
@@ -127,6 +128,7 @@ export default (canvas, opts) => {
     GLOBE_F_renderParams,
     GLOBE_F_mapBaseBrightness,
     GLOBE_F_highlightUSA,
+    GLOBE_F_highlightIndia,
     GLOBE_F_uTexture,
   ])
 
@@ -397,6 +399,8 @@ export default (canvas, opts) => {
       highlightColor = state.highlightColor
     if (state.highlightUSA != UNDEFINED)
       highlightUSA = state.highlightUSA ? 1 : 0
+    if (state.highlightIndia != UNDEFINED)
+      highlightIndia = state.highlightIndia ? 1 : 0
     if (state.arcColor != UNDEFINED) arcColor = state.arcColor
     if (state.arcWidth != UNDEFINED) arcWidth = state.arcWidth
     if (state.arcHeight != UNDEFINED) arcHeight = state.arcHeight
@@ -462,6 +466,7 @@ export default (canvas, opts) => {
     )
     gl.uniform1f(globeUniforms[GLOBE_F_mapBaseBrightness], mapBaseBrightness)
     gl.uniform1f(globeUniforms[GLOBE_F_highlightUSA], highlightUSA)
+    gl.uniform1f(globeUniforms[GLOBE_F_highlightIndia], highlightIndia)
     gl.uniform1i(globeUniforms[GLOBE_F_uTexture], 0)
 
     // Bind texture to unit 0

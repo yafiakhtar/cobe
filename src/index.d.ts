@@ -25,6 +25,7 @@ export interface COBEOptions {
   glowColor: [number, number, number]
   highlightColor?: [number, number, number]
   highlightUSA?: boolean
+  highlightIndia?: boolean
   markers?: Marker[]
   diffuse: number
   devicePixelRatio: number
