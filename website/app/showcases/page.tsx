@@ -82,6 +82,8 @@ function ShowcaseGlobe({
       markers: getShowcaseMarkers(showcaseKey, config.markerSize),
       arcs: getShowcaseArcs(showcaseKey),
       arcColor: config.arcColor,
+      highlightUSA: showcaseKey === 'default',
+      highlightColor: [1, 0.35, 0.08],
       arcWidth: 0.5,
       arcHeight: 0.25,
       opacity: 0.7,
@@ -93,6 +95,7 @@ function ShowcaseGlobe({
       globe.update({
         phi,
         markers: getShowcaseMarkers(showcaseKey, config.markerSize),
+        highlightUSA: showcaseKey === 'default',
       })
       animationId = requestAnimationFrame(animate)
     }
@@ -153,7 +156,7 @@ function ShowcaseGlobe({
                 </text>
               </svg>
             </div>
-            {showcaseDefaultMarkers.map((m) => (
+            {showcaseDefaultMarkers.filter((m) => m.label).map((m) => (
               <div
                 key={m.id}
                 className='showcase-default-label'

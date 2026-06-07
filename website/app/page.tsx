@@ -10,6 +10,7 @@ import {
   getShowcaseMarkers,
   getShowcaseArcs,
   ShowcaseKey,
+  ShowcaseMarker,
   showcaseDefaultMarkers,
   showcaseDefaultArcs,
   stickerMarkers,
@@ -390,7 +391,7 @@ function Showcases() {
 
     const markerArrays: Record<
       ShowcaseKey,
-      { id: string; location: [number, number] }[]
+      ShowcaseMarker[]
     > = {
       default: showcaseDefaultMarkers,
       stickers: stickerMarkers,
@@ -432,6 +433,7 @@ function Showcases() {
       location: [number, number]
       size: number
       id: string
+      color?: [number, number, number]
     }[] = []
 
     const getMarkers = () => {
@@ -447,8 +449,9 @@ function Showcases() {
       cachedSize = size
       cachedMarkers = arr.map((m) => ({
         location: m.location,
-        size,
+        size: m.size ?? size,
         id: m.id,
+        color: m.globeColor,
       }))
       return cachedMarkers
     }
@@ -482,6 +485,8 @@ function Showcases() {
       markers: getMarkers(),
       arcs: getArcs(),
       arcColor: [0.3, 0.45, 0.85],
+      highlightUSA: showcaseRef.current === 'default',
+      highlightColor: [1, 0.35, 0.08],
       arcWidth: 0.5,
       arcHeight: 0.25,
       opacity: 0.7,
@@ -523,6 +528,7 @@ function Showcases() {
         markerElevation: s.markerElevation.get(),
         markers: getMarkers(),
         arcs: getArcs(),
+        highlightUSA: showcaseRef.current === 'default',
       })
       animationId = requestAnimationFrame(animate)
     }
@@ -593,7 +599,7 @@ function Showcases() {
                   </text>
                 </svg>
               </div>
-              {showcaseDefaultMarkers.map((m) => (
+              {showcaseDefaultMarkers.filter((m) => m.label).map((m) => (
                 <div
                   key={m.id}
                   className='showcase-default-label'

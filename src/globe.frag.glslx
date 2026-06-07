@@ -7,8 +7,10 @@ uniform float dots;
 uniform float scale;
 uniform vec3 baseColor;
 uniform vec3 glowColor;
+uniform vec3 highlightColor;
 uniform vec4 renderParams;    // (dotsBrightness, diffuse, dark, opacity)
 uniform float mapBaseBrightness;
+uniform float highlightUSA;
 uniform sampler2D uTexture;
 
 const float sqrt5 = 2.236068;
@@ -29,6 +31,74 @@ mat3 rotate(float theta, float phi) {
     0.0, cx, sx,
     sy, cy * -sx, cy * cx
   );
+}
+
+bool rayCrosses(vec2 p, vec2 a, vec2 b) {
+  if (abs(b.y - a.y) < 0.0001) return false;
+  return ((a.y > p.y) != (b.y > p.y))
+    && (p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x);
+}
+
+bool toggleInside(bool inside, vec2 p, vec2 a, vec2 b) {
+  if (rayCrosses(p, a, b)) inside = !inside;
+  return inside;
+}
+
+float polygonLower48(vec2 p) {
+  bool inside = false;
+  inside = toggleInside(inside, p, vec2(-124.7, 48.4), vec2(-124.4, 42.0));
+  inside = toggleInside(inside, p, vec2(-124.4, 42.0), vec2(-123.0, 38.0));
+  inside = toggleInside(inside, p, vec2(-123.0, 38.0), vec2(-122.0, 36.5));
+  inside = toggleInside(inside, p, vec2(-122.0, 36.5), vec2(-117.1, 32.5));
+  inside = toggleInside(inside, p, vec2(-117.1, 32.5), vec2(-111.0, 31.3));
+  inside = toggleInside(inside, p, vec2(-111.0, 31.3), vec2(-106.5, 31.8));
+  inside = toggleInside(inside, p, vec2(-106.5, 31.8), vec2(-103.0, 29.8));
+  inside = toggleInside(inside, p, vec2(-103.0, 29.8), vec2(-100.0, 28.3));
+  inside = toggleInside(inside, p, vec2(-100.0, 28.3), vec2(-97.0, 25.9));
+  inside = toggleInside(inside, p, vec2(-97.0, 25.9), vec2(-94.6, 29.3));
+  inside = toggleInside(inside, p, vec2(-94.6, 29.3), vec2(-90.0, 29.0));
+  inside = toggleInside(inside, p, vec2(-90.0, 29.0), vec2(-85.0, 29.6));
+  inside = toggleInside(inside, p, vec2(-85.0, 29.6), vec2(-82.0, 25.1));
+  inside = toggleInside(inside, p, vec2(-82.0, 25.1), vec2(-80.1, 25.3));
+  inside = toggleInside(inside, p, vec2(-80.1, 25.3), vec2(-80.0, 31.0));
+  inside = toggleInside(inside, p, vec2(-80.0, 31.0), vec2(-75.0, 35.5));
+  inside = toggleInside(inside, p, vec2(-75.0, 35.5), vec2(-71.0, 41.0));
+  inside = toggleInside(inside, p, vec2(-71.0, 41.0), vec2(-67.0, 45.0));
+  inside = toggleInside(inside, p, vec2(-67.0, 45.0), vec2(-70.5, 47.5));
+  inside = toggleInside(inside, p, vec2(-70.5, 47.5), vec2(-82.0, 45.2));
+  inside = toggleInside(inside, p, vec2(-82.0, 45.2), vec2(-95.0, 49.0));
+  inside = toggleInside(inside, p, vec2(-95.0, 49.0), vec2(-110.0, 49.0));
+  inside = toggleInside(inside, p, vec2(-110.0, 49.0), vec2(-124.7, 48.4));
+  return inside ? 1.0 : 0.0;
+}
+
+float polygonAlaska(vec2 p) {
+  bool inside = false;
+  inside = toggleInside(inside, p, vec2(-170.0, 52.0), vec2(-160.0, 54.0));
+  inside = toggleInside(inside, p, vec2(-160.0, 54.0), vec2(-150.0, 55.0));
+  inside = toggleInside(inside, p, vec2(-150.0, 55.0), vec2(-137.0, 58.0));
+  inside = toggleInside(inside, p, vec2(-137.0, 58.0), vec2(-130.0, 60.0));
+  inside = toggleInside(inside, p, vec2(-130.0, 60.0), vec2(-130.0, 71.5));
+  inside = toggleInside(inside, p, vec2(-130.0, 71.5), vec2(-143.0, 71.5));
+  inside = toggleInside(inside, p, vec2(-143.0, 71.5), vec2(-153.0, 70.0));
+  inside = toggleInside(inside, p, vec2(-153.0, 70.0), vec2(-160.0, 66.0));
+  inside = toggleInside(inside, p, vec2(-160.0, 66.0), vec2(-168.0, 64.0));
+  inside = toggleInside(inside, p, vec2(-168.0, 64.0), vec2(-170.0, 58.0));
+  inside = toggleInside(inside, p, vec2(-170.0, 58.0), vec2(-170.0, 52.0));
+  return inside ? 1.0 : 0.0;
+}
+
+float polygonHawaii(vec2 p) {
+  bool inside = false;
+  inside = toggleInside(inside, p, vec2(-161.0, 18.5), vec2(-154.0, 18.5));
+  inside = toggleInside(inside, p, vec2(-154.0, 18.5), vec2(-154.0, 22.8));
+  inside = toggleInside(inside, p, vec2(-154.0, 22.8), vec2(-161.0, 22.8));
+  inside = toggleInside(inside, p, vec2(-161.0, 22.8), vec2(-161.0, 18.5));
+  return inside ? 1.0 : 0.0;
+}
+
+float usaRegion(vec2 lonLat) {
+  return max(max(polygonLower48(lonLat), polygonAlaska(lonLat)), polygonHawaii(lonLat));
 }
 
 vec3 nearestFibonacciLattice(vec3 p, out float m) {
@@ -110,14 +180,20 @@ void fragment() {
     float gTheta = acos(-gP.x / cos(gPhi));
     if (gP.z < 0.0) gTheta = -gTheta;
 
-    float mapColor = max(texture2D(uTexture, vec2(((gTheta * 0.5) / PI), -(gPhi / PI + 0.5))).x, mapBaseBrightness);
+    float mapU = fract((gTheta * 0.5) / PI + 1.0);
+    float mapSample = texture2D(uTexture, vec2(mapU, -(gPhi / PI + 0.5))).x;
+    float mapColor = max(mapSample, mapBaseBrightness);
+    vec2 lonLat = vec2(mapU * 360.0 - 180.0, gPhi * 180.0 / PI);
+    float countryHighlight = highlightUSA * usaRegion(lonLat) * step(0.01, mapSample);
 
     float sample = mapColor
       * smoothstep(0.008, 0.0, dis) // v
       * pow(dotNL, renderParams.y) // lighting
       * renderParams.x;
-    layer += vec4(baseColor
-      * (mix((1.0 - sample) * pow(dotNL, 0.4), sample, renderParams.z) + 0.1) // colorFactor, dark
+    float colorFactor = mix((1.0 - sample) * pow(dotNL, 0.4), sample, renderParams.z) + 0.1;
+    colorFactor = mix(colorFactor, max(colorFactor, 0.65 * pow(dotNL, 0.25) + 0.18), countryHighlight);
+    vec3 landColor = mix(baseColor, highlightColor, countryHighlight);
+    layer += vec4(landColor * colorFactor
       + pow(1.0 - dotNL, 4.0) * glowColor // glow
     , 1.0);
 

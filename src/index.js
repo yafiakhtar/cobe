@@ -72,6 +72,8 @@ export default (canvas, opts) => {
   let baseColor = opts.baseColor || [1, 1, 1]
   let markerColor = opts.markerColor || [1, 0.5, 0]
   let glowColor = opts.glowColor || [1, 1, 1]
+  let highlightColor = opts.highlightColor || [1, 0.35, 0.08]
+  let highlightUSA = opts.highlightUSA ? 1 : 0
   let arcColor = opts.arcColor || [0.3, 0.6, 1]
   let arcWidth = opts.arcWidth ?? 1
   let arcHeight = opts.arcHeight ?? 0.2
@@ -121,8 +123,10 @@ export default (canvas, opts) => {
     GLOBE_F_offset,
     GLOBE_F_baseColor,
     GLOBE_F_glowColor,
+    GLOBE_F_highlightColor,
     GLOBE_F_renderParams,
     GLOBE_F_mapBaseBrightness,
+    GLOBE_F_highlightUSA,
     GLOBE_F_uTexture,
   ])
 
@@ -389,6 +393,10 @@ export default (canvas, opts) => {
     if (state.baseColor != UNDEFINED) baseColor = state.baseColor
     if (state.markerColor != UNDEFINED) markerColor = state.markerColor
     if (state.glowColor != UNDEFINED) glowColor = state.glowColor
+    if (state.highlightColor != UNDEFINED)
+      highlightColor = state.highlightColor
+    if (state.highlightUSA != UNDEFINED)
+      highlightUSA = state.highlightUSA ? 1 : 0
     if (state.arcColor != UNDEFINED) arcColor = state.arcColor
     if (state.arcWidth != UNDEFINED) arcWidth = state.arcWidth
     if (state.arcHeight != UNDEFINED) arcHeight = state.arcHeight
@@ -444,6 +452,7 @@ export default (canvas, opts) => {
     )
     gl.uniform3fv(globeUniforms[GLOBE_F_baseColor], baseColor)
     gl.uniform3fv(globeUniforms[GLOBE_F_glowColor], glowColor)
+    gl.uniform3fv(globeUniforms[GLOBE_F_highlightColor], highlightColor)
     gl.uniform4f(
       globeUniforms[GLOBE_F_renderParams],
       mapBrightness,
@@ -452,6 +461,7 @@ export default (canvas, opts) => {
       opacity,
     )
     gl.uniform1f(globeUniforms[GLOBE_F_mapBaseBrightness], mapBaseBrightness)
+    gl.uniform1f(globeUniforms[GLOBE_F_highlightUSA], highlightUSA)
     gl.uniform1i(globeUniforms[GLOBE_F_uTexture], 0)
 
     // Bind texture to unit 0

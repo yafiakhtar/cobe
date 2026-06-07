@@ -11,69 +11,31 @@ export type ShowcaseConfig = {
   markerElevation: number
 }
 
-// Showcase: Default (matches hero globe exactly)
-export const showcaseDefaultMarkers = [
+export type ShowcaseMarker = {
+  id: string
+  location: [number, number]
+  globeColor?: [number, number, number]
+  size?: number
+  label?: string
+}
+
+// Showcase: Default
+export const showcaseDefaultMarkers: ShowcaseMarker[] = [
   {
-    id: 'default-sf',
-    location: [37.7595, -122.4367] as [number, number],
-    label: 'San Francisco',
-  },
-  {
-    id: 'default-nyc',
-    location: [40.7128, -74.006] as [number, number],
-    label: 'New York',
-  },
-  {
-    id: 'default-tokyo',
-    location: [35.6762, 139.6503] as [number, number],
-    label: 'Tokyo',
-  },
-  {
-    id: 'default-london',
-    location: [51.5074, -0.1278] as [number, number],
-    label: 'London',
-  },
-  {
-    id: 'default-sydney',
-    location: [-33.8688, 151.2093] as [number, number],
-    label: 'Sydney',
-  },
-  {
-    id: 'default-capetown',
-    location: [-33.9249, 18.4241] as [number, number],
-    label: 'Cape Town',
-  },
-  {
-    id: 'default-dubai',
-    location: [25.2048, 55.2708] as [number, number],
-    label: 'Dubai',
-  },
-  {
-    id: 'default-paris',
-    location: [48.8566, 2.3522] as [number, number],
-    label: 'Paris',
-  },
-  {
-    id: 'default-saopaulo',
-    location: [-23.5505, -46.6333] as [number, number],
-    label: 'São Paulo',
+    id: 'default-usa',
+    location: [39.8283, -98.5795],
+    globeColor: [1, 0.35, 0.08],
+    size: 0.035,
+    label: 'United States',
   },
 ]
 
-export const showcaseDefaultArcs = [
-  {
-    id: 'default-sf-tokyo',
-    from: [37.7595, -122.4367] as [number, number],
-    to: [35.6762, 139.6503] as [number, number],
-    label: 'SF → Tokyo',
-  },
-  {
-    id: 'default-nyc-london',
-    from: [40.7128, -74.006] as [number, number],
-    to: [51.5074, -0.1278] as [number, number],
-    label: 'NYC → London',
-  },
-]
+export const showcaseDefaultArcs: {
+  id: string
+  from: [number, number]
+  to: [number, number]
+  label: string
+}[] = []
 
 // Showcase: Stickers
 export const stickerMarkers = [
@@ -630,9 +592,9 @@ export const showcaseConfigs: Record<string, ShowcaseConfig> = {
     theta: 0.2,
     dark: 0,
     mapBrightness: 10,
-    markerColor: [0.3, 0.45, 0.85],
+    markerColor: [1, 0.35, 0.08],
     baseColor: [1, 1, 1],
-    arcColor: [0.3, 0.45, 0.85],
+    arcColor: [1, 0.35, 0.08],
     markerSize: 0.025,
     markerElevation: 0.01,
   },
@@ -780,7 +742,7 @@ export type ShowcaseKey = (typeof showcases)[number]['key']
 export function getShowcaseMarkers(key: ShowcaseKey, size: number) {
   const markerArrays: Record<
     ShowcaseKey,
-    { id: string; location: [number, number] }[]
+    ShowcaseMarker[]
   > = {
     default: showcaseDefaultMarkers,
     cdn: cdnMarkers,
@@ -798,7 +760,12 @@ export function getShowcaseMarkers(key: ShowcaseKey, size: number) {
   }
   const arr = markerArrays[key]
   if (!arr) return []
-  return arr.map((m) => ({ location: m.location, size, id: m.id }))
+  return arr.map((m) => ({
+    location: m.location,
+    size: m.size ?? size,
+    id: m.id,
+    color: m.globeColor,
+  }))
 }
 
 // Helper to get arcs for a showcase
